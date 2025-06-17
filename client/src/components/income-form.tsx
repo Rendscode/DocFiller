@@ -604,6 +604,12 @@ export default function IncomeForm({ data, onSubmit }: IncomeFormProps) {
                 )}
               </TabsContent>
             </Tabs>
+            
+            <div className="flex justify-end pt-4">
+              <Button type="submit">
+                Einkommensangaben speichern
+              </Button>
+            </div>
           </form>
         </Form>
       </div>
