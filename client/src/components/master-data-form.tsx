@@ -168,6 +168,12 @@ export default function MasterDataForm({ data, onSubmit, onAutoSave }: MasterDat
                 )}
               />
             </div>
+            
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={!isComplete}>
+                Stammdaten speichern
+              </Button>
+            </div>
           </form>
         </Form>
       </div>

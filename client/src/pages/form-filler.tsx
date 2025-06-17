@@ -87,10 +87,26 @@ export default function FormFiller() {
       return;
     }
 
-    if (!formData.masterData || !formData.generalInfo) {
+    // Check if master data is complete
+    const isMasterDataComplete = formData.masterData && 
+      formData.masterData.firstName && 
+      formData.masterData.lastName && 
+      formData.masterData.customerNumber && 
+      formData.masterData.birthDate && 
+      formData.masterData.street && 
+      formData.masterData.postalCode && 
+      formData.masterData.city;
+
+    // Check if general info is complete
+    const isGeneralInfoComplete = formData.generalInfo && 
+      formData.generalInfo.activityStartDate && 
+      formData.generalInfo.activityLocation && 
+      formData.generalInfo.activityType;
+
+    if (!isMasterDataComplete || !isGeneralInfoComplete) {
       toast({
         title: "Unvollständige Angaben",
-        description: "Bitte füllen Sie mindestens die Stammdaten und allgemeinen Angaben aus.",
+        description: "Bitte füllen Sie alle Pflichtfelder in den Stammdaten und allgemeinen Angaben aus.",
         variant: "destructive",
       });
       return;
@@ -99,8 +115,8 @@ export default function FormFiller() {
     setIsGeneratingPDF(true);
     try {
       const completeFormData: FormData = {
-        masterData: formData.masterData,
-        generalInfo: formData.generalInfo,
+        masterData: formData.masterData!,
+        generalInfo: formData.generalInfo!,
         workingTime: formData.workingTime || { type: "constant", constantHours: 0, calendarWeeks: [] },
         income: formData.income || { type: "existing" },
         declarationConfirmed,
@@ -226,7 +242,7 @@ export default function FormFiller() {
                     <label className="flex items-center cursor-pointer">
                       <Checkbox
                         checked={declarationConfirmed}
-                        onCheckedChange={setDeclarationConfirmed}
+                        onCheckedChange={(checked) => setDeclarationConfirmed(checked === true)}
                         required
                       />
                       <span className="ml-2 text-sm text-gray-700">

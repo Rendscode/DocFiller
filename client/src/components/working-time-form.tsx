@@ -267,6 +267,12 @@ export default function WorkingTimeForm({ data, onSubmit }: WorkingTimeFormProps
                 )}
               </div>
             )}
+            
+            <div className="flex justify-end pt-4">
+              <Button type="submit">
+                Arbeitszeit speichern
+              </Button>
+            </div>
           </form>
         </Form>
       </div>

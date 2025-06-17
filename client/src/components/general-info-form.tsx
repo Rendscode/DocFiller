@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { generalInfoSchema, GeneralInfo } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Briefcase } from "lucide-react";
 
@@ -112,6 +113,12 @@ export default function GeneralInfoForm({ data, onSubmit }: GeneralInfoFormProps
                   </FormItem>
                 )}
               />
+            </div>
+            
+            <div className="flex justify-end pt-4">
+              <Button type="submit">
+                Allgemeine Angaben speichern
+              </Button>
             </div>
           </form>
         </Form>
