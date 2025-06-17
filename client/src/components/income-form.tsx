@@ -242,7 +242,7 @@ export default function IncomeForm({ data, onSubmit }: IncomeFormProps) {
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="low" id="low-income" />
                                 <label htmlFor="low-income" className="text-sm font-medium text-gray-900">
-                                  Erwartete Einnahmen ≤ 165 EUR monatlich
+                                  Erwartete Einnahmen {'≤'} 165 EUR monatlich
                                 </label>
                               </div>
                             </RadioGroup>
@@ -277,7 +277,7 @@ export default function IncomeForm({ data, onSubmit }: IncomeFormProps) {
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="high" id="high-income" />
                                 <label htmlFor="high-income" className="text-sm font-medium text-gray-900">
-                                  Erwartete Einnahmen > 165 EUR monatlich
+                                  Erwartete Einnahmen {'>'} 165 EUR monatlich
                                 </label>
                               </div>
                             </RadioGroup>
