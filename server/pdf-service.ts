@@ -71,7 +71,7 @@ export class PDFService {
             }
           }
         } catch (e) {
-          console.log(`Field not found or error: ${fieldName}`, e.message);
+          console.log(`Field not found or error: ${fieldName}`, e instanceof Error ? e.message : 'Unknown error');
         }
       });
     } catch (error) {
@@ -97,7 +97,7 @@ export class PDFService {
             }
           }
         } catch (e) {
-          console.log(`Field not found or error: ${fieldName}`, e.message);
+          console.log(`Field not found or error: ${fieldName}`, e instanceof Error ? e.message : 'Unknown error');
         }
       });
 
@@ -109,7 +109,7 @@ export class PDFService {
             indefiniteField.check();
           }
         } catch (e) {
-          console.log('Indefinite checkbox not found:', e.message);
+          console.log('Indefinite checkbox not found:', e instanceof Error ? e.message : 'Unknown error');
         }
       }
     } catch (error) {
@@ -120,80 +120,69 @@ export class PDFService {
   private fillWorkingTimeFields(form: PDFForm, workingTime: any) {
     try {
       if (workingTime.type === 'constant') {
-        // Fill constant working hours
+        // Fill constant working hours checkbox (Ja)
         try {
-          const constantField = form.getField('gleichbleibend_ja');
+          const constantField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].Ja-Nein-2[0]');
           if (constantField instanceof PDFCheckBox) {
             constantField.check();
           }
           
-          const hoursField = form.getField('Stundenzahl_wöchentlich');
+          const hoursField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].Wenn_ja_Stundenzahl_wöchentlich[0]');
           if (hoursField instanceof PDFTextField) {
             hoursField.setText(String(workingTime.constantHours || 0));
           }
         } catch (e) {
-          // Fields don't exist
+          console.log('Error filling constant hours:', e instanceof Error ? e.message : 'Unknown error');
         }
       } else if (workingTime.type === 'variable' && workingTime.calendarWeeks) {
-        // Fill variable working hours
+        // Fill variable working hours checkbox (Nein)
         try {
-          const variableField = form.getField('gleichbleibend_nein');
+          const variableField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].Ja-Nein-2[1]');
           if (variableField instanceof PDFCheckBox) {
             variableField.check();
           }
         } catch (e) {
-          // Field doesn't exist
+          console.log('Error checking variable field:', e instanceof Error ? e.message : 'Unknown error');
         }
 
-        // Fill calendar weeks (up to 5)
+        // Fill calendar weeks (up to 5) - Z1S1 to Z5S10 pattern
         workingTime.calendarWeeks.slice(0, 5).forEach((week: any, index: number) => {
           const rowNum = index + 1;
           try {
-            // Fill week dates
-            const startDateField = form.getField(`vom_${rowNum}`);
-            const endDateField = form.getField(`bis_${rowNum}`);
-            const calendarWeekField = form.getField(`KW_${rowNum}`);
+            // Fill week date range and calendar week
+            // S1 = vom (start date), S2 = bis (end date), S3 = calendar week
+            const startDateField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S1[0]`);
+            const endDateField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S2[0]`);
+            const calendarWeekField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S3[0]`);
             
-            if (startDateField instanceof PDFTextField) {
+            if (startDateField instanceof PDFTextField && week.startDate) {
               startDateField.setText(week.startDate);
             }
-            if (endDateField instanceof PDFTextField) {
+            if (endDateField instanceof PDFTextField && week.endDate) {
               endDateField.setText(week.endDate);
             }
-            if (calendarWeekField instanceof PDFTextField) {
+            if (calendarWeekField instanceof PDFTextField && week.calendarWeek) {
               calendarWeekField.setText(String(week.calendarWeek));
             }
 
-            // Fill daily hours
-            const days = ['MO', 'DI', 'MI', 'DO', 'FR', 'SA', 'SO'];
+            // Fill daily hours: S4=MO, S5=DI, S6=MI, S7=DO, S8=FR, S9=SA, S10=SO
             const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-            
-            days.forEach((day, dayIndex) => {
+            dayKeys.forEach((dayKey, dayIndex) => {
               try {
-                const dayField = form.getField(`${day}_${rowNum}`);
+                const columnIndex = 4 + dayIndex; // S4 to S10
+                const dayField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S${columnIndex}[0]`);
                 if (dayField instanceof PDFTextField) {
-                  const hours = week.hours[dayKeys[dayIndex]] || 0;
+                  const hours = week.hours[dayKey] || 0;
                   if (hours > 0) {
                     dayField.setText(String(hours));
                   }
                 }
               } catch (e) {
-                // Day field doesn't exist
+                // Day field doesn't exist or error
               }
             });
-
-            // Calculate and fill total hours
-            const totalHours = Object.values(week.hours).reduce((sum: number, h: any) => sum + (h || 0), 0);
-            try {
-              const totalField = form.getField(`gesamt_${rowNum}`);
-              if (totalField instanceof PDFTextField) {
-                totalField.setText(String(totalHours));
-              }
-            } catch (e) {
-              // Total field doesn't exist
-            }
           } catch (e) {
-            console.error(`Error filling week ${rowNum}:`, e);
+            console.log(`Error filling week ${rowNum}:`, e instanceof Error ? e.message : 'Unknown error');
           }
         });
       }
@@ -205,10 +194,10 @@ export class PDFService {
   private fillIncomeFields(form: PDFForm, income: any) {
     try {
       if (income.type === 'existing' && income.existingActivity) {
-        // Fill existing activity section
+        // Section 3.1 - Existing activity
         if (income.existingActivity.scope === 'same') {
           try {
-            const sameField = form.getField('gleicher_Umfang_ja');
+            const sameField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Einkommen_3_1[0].Ja-Nein-3-1[0]');
             if (sameField instanceof PDFCheckBox) {
               sameField.check();
             }
@@ -217,7 +206,7 @@ export class PDFService {
 
         if (income.existingActivity.isUnchanged) {
           try {
-            const unchangedField = form.getField('unverändert_ja');
+            const unchangedField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Einkommen_3_1[0].Ja-Nein-3-1a[0]');
             if (unchangedField instanceof PDFCheckBox) {
               unchangedField.check();
             }
@@ -226,38 +215,38 @@ export class PDFService {
 
         if (income.existingActivity.monthlyIncome) {
           try {
-            const incomeField = form.getField('Höhe_Einnahmen_monatlich');
+            const incomeField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Einkommen_3_1[0].Wenn_ja_Höhe_der_Einnahme[0]');
             if (incomeField instanceof PDFTextField) {
               incomeField.setText(String(income.existingActivity.monthlyIncome));
             }
           } catch (e) {}
         }
       } else if (income.type === 'new' && income.newActivity) {
-        // Fill new activity section
+        // Section 3.2 - New activity
         if (income.newActivity.expectedIncome === 'low') {
           try {
-            const lowIncomeField = form.getField('bis_165_ja');
+            const lowIncomeField = form.getField('Arbeitsbescheinigung[0].Seite2[0].#subform[0].Ja-Nein-4[0]');
             if (lowIncomeField instanceof PDFCheckBox) {
               lowIncomeField.check();
             }
           } catch (e) {}
         } else {
           try {
-            const highIncomeField = form.getField('über_165_ja');
+            const highIncomeField = form.getField('Arbeitsbescheinigung[0].Seite2[0].#subform[0].Ja-Nein-4[1]');
             if (highIncomeField instanceof PDFCheckBox) {
               highIncomeField.check();
             }
           } catch (e) {}
         }
       } else if (income.type === 'detailed' && income.detailedInfo) {
-        // Fill detailed income section
+        // Section 3.3 - Detailed income section
         const detailedMappings = {
-          'Einnahmen_monatlich': income.detailedInfo.monthlyIncome,
-          'Ausgaben': income.detailedInfo.businessExpenses,
-          'Abschreibung': income.detailedInfo.depreciation,
-          'Einkommensteuer': income.detailedInfo.incomeTax,
-          'Kirchensteuer': income.detailedInfo.churchTax,
-          'Solidaritätszuschlag': income.detailedInfo.solidarityTax,
+          'Arbeitsbescheinigung[0].Seite2[0].Einnahme_monatlich-EUR[0]': income.detailedInfo.monthlyIncome,
+          'Arbeitsbescheinigung[0].Seite2[0].Betriebsausgaben-EUR[0]': income.detailedInfo.businessExpenses,
+          'Arbeitsbescheinigung[0].Seite2[0].Absetzung_fuer_Abnutzung-EUR[0]': income.detailedInfo.depreciation,
+          'Arbeitsbescheinigung[0].Seite2[0].Einkommensteuer-EUR[0]': income.detailedInfo.incomeTax,
+          'Arbeitsbescheinigung[0].Seite2[0].Kirchensteuer-EUR[0]': income.detailedInfo.churchTax,
+          'Arbeitsbescheinigung[0].Seite2[0].Solidaritätszuschlag-EUR[0]': income.detailedInfo.solidarityTax,
         };
 
         Object.entries(detailedMappings).forEach(([fieldName, value]) => {
@@ -274,9 +263,16 @@ export class PDFService {
         // Handle expense treatment
         if (income.detailedInfo.expenseTreatment === 'flat') {
           try {
-            const flatField = form.getField('30_Prozent_ja');
+            const flatField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-5[0]');
             if (flatField instanceof PDFCheckBox) {
               flatField.check();
+            }
+          } catch (e) {}
+        } else {
+          try {
+            const detailedField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-5[1]');
+            if (detailedField instanceof PDFCheckBox) {
+              detailedField.check();
             }
           } catch (e) {}
         }
@@ -288,20 +284,20 @@ export class PDFService {
 
   private markDeclarationConfirmed(form: PDFForm) {
     try {
-      // Add signature placeholder and date
+      // Add signature placeholder and date using actual PDF field names
       const today = new Date().toLocaleDateString('de-DE');
       
       try {
-        const dateField = form.getField('Datum');
+        const dateField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Datum-unten[0]');
         if (dateField instanceof PDFTextField) {
           dateField.setText(today);
         }
       } catch (e) {}
 
       try {
-        const signatureField = form.getField('Unterschrift');
-        if (signatureField instanceof PDFTextField) {
-          signatureField.setText('[Digitale Bestätigung der Richtigkeit]');
+        const locationField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ort-unten[0]');
+        if (locationField instanceof PDFTextField) {
+          locationField.setText('[Digitale Bestätigung]');
         }
       } catch (e) {}
     } catch (error) {
