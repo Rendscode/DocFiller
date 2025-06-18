@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertFormSubmissionSchema } from "@shared/schema";
+import { PDFService } from "./pdf-service";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -51,15 +52,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { formData } = req.body;
       
-      // TODO: Implement PDF generation using pdf-lib
-      // For now, return a mock response
-      res.json({ 
-        success: true, 
-        message: "PDF generation would be implemented here",
-        downloadUrl: "/api/download-pdf/mock-id"
-      });
+      if (!formData) {
+        return res.status(400).json({ message: "Form data is required" });
+      }
+
+      const pdfService = new PDFService();
+      const pdfBytes = await pdfService.fillForm(formData);
+      
+      // Set appropriate headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="erklaerung_selbststaendige_arbeit.pdf"');
+      res.setHeader('Content-Length', pdfBytes.length);
+      
+      // Send the PDF as binary data
+      res.send(Buffer.from(pdfBytes));
     } catch (error) {
-      res.status(500).json({ message: "PDF generation failed" });
+      console.error('PDF generation error:', error);
+      res.status(500).json({ 
+        message: "PDF generation failed", 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

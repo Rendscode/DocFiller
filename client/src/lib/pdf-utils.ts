@@ -12,9 +12,6 @@ export async function generatePDF(
     includeTimestamp: true,
   }
 ): Promise<Blob> {
-  // This would integrate with pdf-lib to fill out the actual PDF form
-  // For now, return a mock implementation
-  
   const response = await fetch('/api/generate-pdf', {
     method: 'POST',
     headers: {
@@ -24,13 +21,12 @@ export async function generatePDF(
   });
 
   if (!response.ok) {
-    throw new Error('PDF generation failed');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'PDF generation failed');
   }
 
-  // In a real implementation, this would return the PDF blob
-  // For now, create a mock PDF with form data as text
-  const pdfContent = createMockPDFContent(formData);
-  return new Blob([pdfContent], { type: 'application/pdf' });
+  // Return the PDF blob directly from the server response
+  return await response.blob();
 }
 
 function createMockPDFContent(formData: FormData): string {
