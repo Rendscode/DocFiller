@@ -52,22 +52,13 @@ export class PDFService {
 
   private fillMasterDataFields(form: PDFForm, masterData: any) {
     try {
-      // Try to find and fill form fields based on common field names
-      const fieldNames = form.getFields().map(field => field.getName());
-      console.log('Available form fields:', fieldNames);
-
-      // Common field mappings for German employment office forms
+      // Use actual field names from the PDF form
       const fieldMappings = {
-        'Kundennummer': masterData.customerNumber,
-        'Nachname': masterData.lastName,
-        'Vorname': masterData.firstName,
-        'Name': `${masterData.firstName} ${masterData.lastName}`,
-        'Geburtsdatum': masterData.birthDate,
-        'Straße': masterData.street,
-        'PLZ': masterData.postalCode,
-        'Ort': masterData.city,
-        'Postleitzahl': masterData.postalCode,
-        'Wohnort': masterData.city,
+        'Arbeitsbescheinigung[0].Seite1[0].Kundennummer[0]': masterData.customerNumber,
+        'Arbeitsbescheinigung[0].Seite1[0].Name_Vorname[0]': `${masterData.lastName}, ${masterData.firstName}`,
+        'Arbeitsbescheinigung[0].Seite1[0].Geburtsdatum[0]': masterData.birthDate,
+        'Arbeitsbescheinigung[0].Seite1[0].Straße_Haus-Nr\.[0]': masterData.street,
+        'Arbeitsbescheinigung[0].Seite1[0].Postleitzahl_Wohnort[0]': `${masterData.postalCode} ${masterData.city}`,
       };
 
       // Fill fields that exist in the form
@@ -80,7 +71,7 @@ export class PDFService {
             }
           }
         } catch (e) {
-          // Field doesn't exist, continue with next field
+          console.log(`Field not found or error: ${fieldName}`, e.message);
         }
       });
     } catch (error) {
@@ -91,10 +82,10 @@ export class PDFService {
   private fillGeneralInfoFields(form: PDFForm, generalInfo: any) {
     try {
       const fieldMappings = {
-        'Tätigkeit_ab': generalInfo.activityStartDate,
-        'Tätigkeit_bis': generalInfo.isIndefinite ? 'bis auf weiteres' : generalInfo.activityEndDate,
-        'Ort_der_Tätigkeit': generalInfo.activityLocation,
-        'Art_der_Tätigkeit': generalInfo.activityType,
+        'Arbeitsbescheinigung[0].Seite1[0].Allgemeine_Angaben_1[0].Die_Tätigkeit_wird_ausgeübt[0]': generalInfo.activityStartDate,
+        'Arbeitsbescheinigung[0].Seite1[0].Allgemeine_Angaben_1[0].voraussichtlich_bis_Datum[0]': generalInfo.isIndefinite ? '' : generalInfo.activityEndDate,
+        'Arbeitsbescheinigung[0].Seite1[0].Allgemeine_Angaben_1[0].Ort_der_Taetigkeit[0]': generalInfo.activityLocation,
+        'Arbeitsbescheinigung[0].Seite1[0].Allgemeine_Angaben_1[0].Art_der_Taetigkeit[0]': generalInfo.activityType,
       };
 
       Object.entries(fieldMappings).forEach(([fieldName, value]) => {
@@ -106,19 +97,19 @@ export class PDFService {
             }
           }
         } catch (e) {
-          // Field doesn't exist, continue
+          console.log(`Field not found or error: ${fieldName}`, e.message);
         }
       });
 
       // Handle checkbox for "bis auf weiteres"
       if (generalInfo.isIndefinite) {
         try {
-          const indefiniteField = form.getField('bis_auf_weiteres');
+          const indefiniteField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Allgemeine_Angaben_1[0].Kontrollkaestchen1[0]');
           if (indefiniteField instanceof PDFCheckBox) {
             indefiniteField.check();
           }
         } catch (e) {
-          // Field doesn't exist
+          console.log('Indefinite checkbox not found:', e.message);
         }
       }
     } catch (error) {
