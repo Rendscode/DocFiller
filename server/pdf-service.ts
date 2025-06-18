@@ -1,7 +1,11 @@
 import { PDFDocument, PDFForm, PDFTextField, PDFCheckBox } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { FormData } from '@shared/schema';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export class PDFService {
   private originalPdfPath: string;
@@ -12,40 +16,58 @@ export class PDFService {
 
   async fillForm(formData: FormData): Promise<Uint8Array> {
     try {
+      console.log('Starting PDF generation...');
+      console.log('PDF path:', this.originalPdfPath);
+      console.log('File exists:', fs.existsSync(this.originalPdfPath));
+      
       // Read the original PDF form
       const existingPdfBytes = fs.readFileSync(this.originalPdfPath);
+      console.log('PDF file read, size:', existingPdfBytes.length, 'bytes');
       
       // Load the PDF document
       const pdfDoc = await PDFDocument.load(existingPdfBytes);
+      console.log('PDF document loaded successfully');
       
       // Get the form from the PDF
       const form = pdfDoc.getForm();
+      const fields = form.getFields();
+      console.log('Form loaded with', fields.length, 'fields');
       
       // Fill master data fields
+      console.log('Filling master data...');
       this.fillMasterDataFields(form, formData.masterData);
       
       // Fill general info fields
+      console.log('Filling general info...');
       this.fillGeneralInfoFields(form, formData.generalInfo);
       
       // Fill working time fields
+      console.log('Filling working time...');
       this.fillWorkingTimeFields(form, formData.workingTime);
       
       // Fill income fields
+      console.log('Filling income...');
       this.fillIncomeFields(form, formData.income);
       
       // Mark declaration as confirmed
+      console.log('Marking declaration confirmed...');
       if (formData.declarationConfirmed) {
         this.markDeclarationConfirmed(form);
       }
       
       // Flatten the form to prevent further editing
+      console.log('Flattening form...');
       form.flatten();
       
       // Save the PDF
+      console.log('Saving PDF...');
       const pdfBytes = await pdfDoc.save();
+      console.log('PDF generated successfully, size:', pdfBytes.length, 'bytes');
+      
       return pdfBytes;
     } catch (error) {
       console.error('PDF generation error:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       throw new Error('Failed to generate PDF');
     }
   }
