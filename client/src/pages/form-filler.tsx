@@ -127,7 +127,7 @@ export default function FormFiller() {
       
       toast({
         title: "PDF erstellt",
-        description: "Das ausgefüllte Formular wurde erfolgreich heruntergeladen.",
+        description: "Das ausgefüllte Formular wurde generiert. Prüfen Sie Ihren Download-Ordner oder die Browser-Downloads.",
       });
     } catch (error) {
       toast({

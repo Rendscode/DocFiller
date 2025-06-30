@@ -77,25 +77,71 @@ export function downloadPDF(blob: Blob, filename: string = 'erklaerung_selbststa
   console.log('Blob size:', blob.size, 'bytes');
   console.log('Blob type:', blob.type);
   
-  // Create a temporary URL for the blob
-  const url = URL.createObjectURL(blob);
-  console.log('Created blob URL:', url);
+  // Check if the browser supports downloads
+  if (typeof window === 'undefined') {
+    console.error('Download not supported: not in browser environment');
+    return;
+  }
   
-  // Create a temporary anchor element to trigger download
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.style.display = 'none';
-  
-  // Add to DOM, click, then remove
-  document.body.appendChild(link);
-  console.log('Triggering download...');
-  link.click();
-  
-  // Clean up
-  setTimeout(() => {
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    console.log('Download cleanup completed');
-  }, 100);
+  // Try multiple download methods for better browser compatibility
+  try {
+    // Method 1: Standard download link approach
+    const url = URL.createObjectURL(blob);
+    console.log('Created blob URL:', url);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    
+    // Set additional attributes for better compatibility
+    link.setAttribute('target', '_blank');
+    link.setAttribute('rel', 'noopener noreferrer');
+    
+    // For some browsers, the link needs to be added to the DOM
+    document.body.appendChild(link);
+    
+    console.log('Triggering download...');
+    
+    // Try multiple trigger methods
+    if (link.click) {
+      link.click();
+    } else {
+      // Fallback for older browsers
+      const event = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      link.dispatchEvent(event);
+    }
+    
+    // Clean up after a delay
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+      URL.revokeObjectURL(url);
+      console.log('Download cleanup completed');
+    }, 1000);
+    
+    // Additional logging to help debug
+    console.log('Download link created and clicked');
+    console.log('Check your browser downloads folder or download notification');
+    
+  } catch (error) {
+    console.error('Download failed:', error);
+    
+    // Method 2: Fallback - open PDF in new tab if download fails
+    try {
+      const url = URL.createObjectURL(blob);
+      const newWindow = window.open(url, '_blank');
+      if (newWindow) {
+        console.log('PDF opened in new tab - you can save it manually');
+      } else {
+        console.error('Failed to open PDF in new tab - popup blocked?');
+      }
+    } catch (fallbackError) {
+      console.error('Fallback method also failed:', fallbackError);
+    }
+  }
 }
