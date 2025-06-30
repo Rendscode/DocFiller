@@ -12,6 +12,8 @@ export async function generatePDF(
     includeTimestamp: true,
   }
 ): Promise<Blob> {
+  console.log('Starting PDF generation request...');
+  
   const response = await fetch('/api/generate-pdf', {
     method: 'POST',
     headers: {
@@ -20,13 +22,19 @@ export async function generatePDF(
     body: JSON.stringify({ formData, options }),
   });
 
+  console.log('Response status:', response.status);
+  console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    console.error('PDF generation failed:', errorData);
     throw new Error(errorData.message || 'PDF generation failed');
   }
 
   // Return the PDF blob directly from the server response
-  return await response.blob();
+  const blob = await response.blob();
+  console.log('PDF blob created, size:', blob.size, 'type:', blob.type);
+  return blob;
 }
 
 function createMockPDFContent(formData: FormData): string {
@@ -65,12 +73,29 @@ Ich versichere die Richtigkeit meiner Angaben: ${formData.declarationConfirmed ?
 }
 
 export function downloadPDF(blob: Blob, filename: string = 'erklaerung_selbststaendige_arbeit.pdf'): void {
+  console.log('Starting PDF download...');
+  console.log('Blob size:', blob.size, 'bytes');
+  console.log('Blob type:', blob.type);
+  
+  // Create a temporary URL for the blob
   const url = URL.createObjectURL(blob);
+  console.log('Created blob URL:', url);
+  
+  // Create a temporary anchor element to trigger download
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
+  link.style.display = 'none';
+  
+  // Add to DOM, click, then remove
   document.body.appendChild(link);
+  console.log('Triggering download...');
   link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  
+  // Clean up
+  setTimeout(() => {
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    console.log('Download cleanup completed');
+  }, 100);
 }
