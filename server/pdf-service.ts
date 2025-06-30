@@ -74,28 +74,87 @@ export class PDFService {
 
   private fillMasterDataFields(form: PDFForm, masterData: any) {
     try {
-      // Use actual field names from the PDF form
-      const fieldMappings = {
-        'Arbeitsbescheinigung[0].Seite1[0].Kundennummer[0]': masterData.customerNumber,
-        'Arbeitsbescheinigung[0].Seite1[0].Name_Vorname[0]': `${masterData.lastName}, ${masterData.firstName}`,
-        'Arbeitsbescheinigung[0].Seite1[0].Geburtsdatum[0]': masterData.birthDate,
-        'Arbeitsbescheinigung[0].Seite1[0].Straße_Haus-Nr\.[0]': masterData.street,
-        'Arbeitsbescheinigung[0].Seite1[0].Postleitzahl_Wohnort[0]': `${masterData.postalCode} ${masterData.city}`,
+      // Get all available field names to find correct mappings
+      const allFields = form.getFields();
+      const fieldNames = allFields.map(field => field.getName());
+      console.log('All available PDF field names:', fieldNames);
+      
+      // Try to find and map fields based on partial name matches
+      const findField = (searchTerms: string[]) => {
+        return fieldNames.find(name => 
+          searchTerms.some(term => name.toLowerCase().includes(term.toLowerCase()))
+        );
       };
-
-      // Fill fields that exist in the form
-      Object.entries(fieldMappings).forEach(([fieldName, value]) => {
+      
+      // Find customer number field
+      const customerNumberField = findField(['kundennummer', 'customer']);
+      if (customerNumberField && masterData.customerNumber) {
         try {
-          const field = form.getField(fieldName);
-          if (field && value) {
-            if (field instanceof PDFTextField) {
-              field.setText(String(value));
-            }
+          const field = form.getField(customerNumberField);
+          if (field instanceof PDFTextField) {
+            field.setText(String(masterData.customerNumber));
+            console.log('Filled customer number field:', customerNumberField);
           }
         } catch (e) {
-          console.log(`Field not found or error: ${fieldName}`, e instanceof Error ? e.message : 'Unknown error');
+          console.log('Error filling customer number:', e instanceof Error ? e.message : 'Unknown error');
         }
-      });
+      }
+      
+      // Find name field
+      const nameField = findField(['name', 'vorname', 'nachname']);
+      if (nameField && masterData.firstName && masterData.lastName) {
+        try {
+          const field = form.getField(nameField);
+          if (field instanceof PDFTextField) {
+            field.setText(`${masterData.lastName}, ${masterData.firstName}`);
+            console.log('Filled name field:', nameField);
+          }
+        } catch (e) {
+          console.log('Error filling name:', e instanceof Error ? e.message : 'Unknown error');
+        }
+      }
+      
+      // Find birth date field
+      const birthDateField = findField(['geburt', 'birth']);
+      if (birthDateField && masterData.birthDate) {
+        try {
+          const field = form.getField(birthDateField);
+          if (field instanceof PDFTextField) {
+            field.setText(String(masterData.birthDate));
+            console.log('Filled birth date field:', birthDateField);
+          }
+        } catch (e) {
+          console.log('Error filling birth date:', e instanceof Error ? e.message : 'Unknown error');
+        }
+      }
+      
+      // Find street/address field
+      const streetField = findField(['straße', 'haus', 'street', 'address', 'adresse']);
+      if (streetField && masterData.street) {
+        try {
+          const field = form.getField(streetField);
+          if (field instanceof PDFTextField) {
+            field.setText(String(masterData.street));
+            console.log('Filled street field:', streetField);
+          }
+        } catch (e) {
+          console.log('Error filling street:', e instanceof Error ? e.message : 'Unknown error');
+        }
+      }
+      
+      // Find postal code and city field
+      const cityField = findField(['postleitzahl', 'wohnort', 'ort', 'city', 'plz']);
+      if (cityField && masterData.postalCode && masterData.city) {
+        try {
+          const field = form.getField(cityField);
+          if (field instanceof PDFTextField) {
+            field.setText(`${masterData.postalCode} ${masterData.city}`);
+            console.log('Filled city field:', cityField);
+          }
+        } catch (e) {
+          console.log('Error filling city:', e instanceof Error ? e.message : 'Unknown error');
+        }
+      }
     } catch (error) {
       console.error('Error filling master data fields:', error);
     }
