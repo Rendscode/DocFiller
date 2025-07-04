@@ -226,31 +226,46 @@ export class PDFService {
           console.log('Error checking variable field:', e instanceof Error ? e.message : 'Unknown error');
         }
 
-        // Fill calendar weeks (up to 5) - Z1S1 to Z5S10 pattern
+        // Fill calendar weeks (up to 5) - Let's debug which field gets what data
         workingTime.calendarWeeks.slice(0, 5).forEach((week: any, index: number) => {
           const rowNum = index + 1;
+          console.log(`\n=== Processing week ${rowNum} ===`);
+          console.log(`Week data:`, { 
+            startDate: week.startDate, 
+            endDate: week.endDate, 
+            calendarWeek: week.calendarWeek,
+            hours: week.hours 
+          });
+          
           try {
-            // S1 = vom (start date), S2 = bis (end date), S3 = calendar week number
+            // Let's test all fields for this row to see which one gets what
+            for (let col = 1; col <= 15; col++) {
+              try {
+                const fieldName = `Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S${col}[0]`;
+                const field = form.getField(fieldName);
+                if (field instanceof PDFTextField) {
+                  console.log(`Found field Z${rowNum}S${col} - this is column ${col} for row ${rowNum}`);
+                }
+              } catch (e) {
+                // Field doesn't exist
+              }
+            }
+            
+            // Now fill the known fields
             const startDateField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S1[0]`);
             const endDateField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S2[0]`);
             const calendarWeekField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S3[0]`);
             
-            // Fill start date (von)
+            // Fill start date (S1 - "vom")
             if (startDateField instanceof PDFTextField && week.startDate) {
               startDateField.setText(week.startDate);
-              console.log(`Filled start date for week ${rowNum}:`, week.startDate);
+              console.log(`✓ S1 (vom): ${week.startDate}`);
             }
             
-            // Fill end date (bis) - keep this for now as it might be needed
-            if (endDateField instanceof PDFTextField && week.endDate) {
-              endDateField.setText(week.endDate);
-              console.log(`Filled end date for week ${rowNum}:`, week.endDate);
-            }
-            
-            // Fill calendar week number in the KW column (S3)
+            // Fill calendar week number (S3 - "Kalenderwoche") 
             if (calendarWeekField instanceof PDFTextField && week.calendarWeek) {
               calendarWeekField.setText(String(week.calendarWeek));
-              console.log(`Filled calendar week for week ${rowNum}:`, week.calendarWeek);
+              console.log(`✓ S3 (Kalenderwoche): ${week.calendarWeek}`);
             }
 
             // Fill daily hours: S4=MO, S5=DI, S6=MI, S7=DO, S8=FR, S9=SA, S10=SO
@@ -274,7 +289,22 @@ export class PDFService {
               }
             });
             
-            console.log(`Total hours for week ${rowNum}:`, totalWeekHours);
+            // Try to find and fill the total hours field (likely S11 or similar)
+            // Based on the screenshot, the calendar week numbers are appearing in what should be total hours
+            try {
+              // Try S11 for total hours
+              const totalHoursField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S11[0]`);
+              if (totalHoursField instanceof PDFTextField && totalWeekHours > 0) {
+                totalHoursField.setText(String(totalWeekHours));
+                console.log(`Filled total hours for week ${rowNum}:`, totalWeekHours);
+              }
+            } catch (e) {
+              console.log(`Could not find total hours field Z${rowNum}S11`);
+              
+              // If S11 doesn't exist, the calendar week numbers might be going to the wrong field
+              // Let's clear the field that's getting the calendar week numbers incorrectly
+              console.log(`Total hours for week ${rowNum}: ${totalWeekHours} (could not find correct field)`);
+            }
           } catch (e) {
             console.log(`Error filling week ${rowNum}:`, e instanceof Error ? e.message : 'Unknown error');
           }
