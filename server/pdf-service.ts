@@ -230,38 +230,51 @@ export class PDFService {
         workingTime.calendarWeeks.slice(0, 5).forEach((week: any, index: number) => {
           const rowNum = index + 1;
           try {
-            // Fill week date range and calendar week
-            // S1 = vom (start date), S2 = bis (end date), S3 = calendar week
+            // S1 = vom (start date), S2 = bis (end date), S3 = calendar week number
             const startDateField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S1[0]`);
             const endDateField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S2[0]`);
             const calendarWeekField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S3[0]`);
             
+            // Fill start date (von)
             if (startDateField instanceof PDFTextField && week.startDate) {
               startDateField.setText(week.startDate);
+              console.log(`Filled start date for week ${rowNum}:`, week.startDate);
             }
+            
+            // Fill end date (bis) - keep this for now as it might be needed
             if (endDateField instanceof PDFTextField && week.endDate) {
               endDateField.setText(week.endDate);
+              console.log(`Filled end date for week ${rowNum}:`, week.endDate);
             }
+            
+            // Fill calendar week number in the KW column (S3)
             if (calendarWeekField instanceof PDFTextField && week.calendarWeek) {
               calendarWeekField.setText(String(week.calendarWeek));
+              console.log(`Filled calendar week for week ${rowNum}:`, week.calendarWeek);
             }
 
             // Fill daily hours: S4=MO, S5=DI, S6=MI, S7=DO, S8=FR, S9=SA, S10=SO
             const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            let totalWeekHours = 0;
+            
             dayKeys.forEach((dayKey, dayIndex) => {
               try {
                 const columnIndex = 4 + dayIndex; // S4 to S10
                 const dayField = form.getField(`Arbeitsbescheinigung[0].Seite1[0].Angaben_Arbeitszeit_2[0].#area[0].Z${rowNum}S${columnIndex}[0]`);
                 if (dayField instanceof PDFTextField) {
                   const hours = week.hours[dayKey] || 0;
+                  totalWeekHours += hours;
                   if (hours > 0) {
                     dayField.setText(String(hours));
+                    console.log(`Filled ${dayKey} hours for week ${rowNum}:`, hours);
                   }
                 }
               } catch (e) {
                 // Day field doesn't exist or error
               }
             });
+            
+            console.log(`Total hours for week ${rowNum}:`, totalWeekHours);
           } catch (e) {
             console.log(`Error filling week ${rowNum}:`, e instanceof Error ? e.message : 'Unknown error');
           }
