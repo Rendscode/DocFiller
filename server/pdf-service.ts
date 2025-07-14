@@ -346,7 +346,7 @@ export class PDFService {
         Object.entries(detailedMappings).forEach(([fieldName, value]) => {
           try {
             const field = form.getField(fieldName);
-            if (field && value) {
+            if (field && value !== null && value !== undefined) {
               if (field instanceof PDFTextField) {
                 field.setText(String(value));
                 console.log(`✓ Filled ${fieldName}: ${value}`);
@@ -365,6 +365,7 @@ export class PDFService {
             const flatField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-5[0]');
             if (flatField instanceof PDFCheckBox) {
               flatField.check();
+              console.log('✓ Checked flat expense treatment');
             }
           } catch (e) {}
         } else {
@@ -372,8 +373,40 @@ export class PDFService {
             const detailedField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-5[1]');
             if (detailedField instanceof PDFCheckBox) {
               detailedField.check();
+              console.log('✓ Checked detailed expense treatment');
             }
           } catch (e) {}
+        }
+
+        // Handle tax-related questions
+        // Ja-Nein-6: "Der Einkommensteuerbescheid für das Kalenderjahr"
+        // Ja-Nein-7: "Die Einkommensteuererklärung für das letzte Kalenderjahr wurde abgegeben."
+        // Ja-Nein-8: "Eine Einkommensteuererklärung für das letzte Kalenderjahr ist beigefügt."
+        
+        // Tax return submitted (Ja-Nein-7)
+        if (income.detailedInfo.taxReturnSubmitted) {
+          try {
+            const taxReturnField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-7[0]');
+            if (taxReturnField instanceof PDFCheckBox) {
+              taxReturnField.check();
+              console.log('✓ Checked tax return submitted');
+            }
+          } catch (e) {
+            console.log('✗ Error checking tax return submitted:', e instanceof Error ? e.message : 'Unknown error');
+          }
+        }
+
+        // Tax assessment attached (Ja-Nein-8)
+        if (income.detailedInfo.taxAssessmentAttached) {
+          try {
+            const taxAssessmentField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-8[0]');
+            if (taxAssessmentField instanceof PDFCheckBox) {
+              taxAssessmentField.check();
+              console.log('✓ Checked tax assessment attached');
+            }
+          } catch (e) {
+            console.log('✗ Error checking tax assessment attached:', e instanceof Error ? e.message : 'Unknown error');
+          }
         }
       }
     } catch (error) {
