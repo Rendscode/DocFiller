@@ -284,6 +284,9 @@ export class PDFService {
 
   private fillIncomeFields(form: PDFForm, income: any) {
     try {
+      console.log('=== Filling Income Fields ===');
+      console.log('Income data received:', JSON.stringify(income, null, 2));
+      
       if (income.type === 'existing' && income.existingActivity) {
         // Section 3.1 - Existing activity
         if (income.existingActivity.scope === 'same') {
@@ -346,9 +349,14 @@ export class PDFService {
             if (field && value) {
               if (field instanceof PDFTextField) {
                 field.setText(String(value));
+                console.log(`✓ Filled ${fieldName}: ${value}`);
               }
+            } else {
+              console.log(`⚠ Skipped ${fieldName}: field=${!!field}, value=${value}`);
             }
-          } catch (e) {}
+          } catch (e) {
+            console.log(`✗ Error filling ${fieldName}:`, e instanceof Error ? e.message : 'Unknown error');
+          }
         });
 
         // Handle expense treatment
