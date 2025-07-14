@@ -378,31 +378,32 @@ export class PDFService {
           } catch (e) {}
         }
 
-        // Handle tax-related questions
+        // Handle tax-related questions with correct field mapping
+        // Based on user feedback, the correct sequence is:
+        // Ja-Nein-5: Expense treatment (already handled above)
         // Ja-Nein-6: "Der Einkommensteuerbescheid für das Kalenderjahr"
         // Ja-Nein-7: "Die Einkommensteuererklärung für das letzte Kalenderjahr wurde abgegeben."
-        // Ja-Nein-8: "Eine Einkommensteuererklärung für das letzte Kalenderjahr ist beigefügt."
         
-        // Tax return submitted (Ja-Nein-7)
+        // Tax return submitted (Ja-Nein-6)
         if (income.detailedInfo.taxReturnSubmitted) {
           try {
-            const taxReturnField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-7[0]');
+            const taxReturnField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-6[0]');
             if (taxReturnField instanceof PDFCheckBox) {
               taxReturnField.check();
-              console.log('✓ Checked tax return submitted');
+              console.log('✓ Checked tax return submitted (Ja-Nein-6)');
             }
           } catch (e) {
             console.log('✗ Error checking tax return submitted:', e instanceof Error ? e.message : 'Unknown error');
           }
         }
 
-        // Tax assessment attached (Ja-Nein-8)
+        // Tax assessment attached (Ja-Nein-7)
         if (income.detailedInfo.taxAssessmentAttached) {
           try {
-            const taxAssessmentField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-8[0]');
+            const taxAssessmentField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-7[0]');
             if (taxAssessmentField instanceof PDFCheckBox) {
               taxAssessmentField.check();
-              console.log('✓ Checked tax assessment attached');
+              console.log('✓ Checked tax assessment attached (Ja-Nein-7)');
             }
           } catch (e) {
             console.log('✗ Error checking tax assessment attached:', e instanceof Error ? e.message : 'Unknown error');
