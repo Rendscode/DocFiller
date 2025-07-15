@@ -379,34 +379,52 @@ export class PDFService {
         }
 
         // Handle tax-related questions with correct field mapping
-        // Based on user feedback, the correct sequence is:
-        // Ja-Nein-5: Expense treatment (already handled above)
-        // Ja-Nein-6: "Der Einkommensteuerbescheid für das Kalenderjahr"
-        // Ja-Nein-7: "Die Einkommensteuererklärung für das letzte Kalenderjahr wurde abgegeben."
+        console.log('=== Tax Checkbox Mapping Test ===');
+        console.log('Form data received:');
+        console.log('- taxReturnSubmitted:', income.detailedInfo.taxReturnSubmitted);
+        console.log('- taxReturnAttached:', income.detailedInfo.taxReturnAttached);
+        console.log('- taxAssessmentAttached:', income.detailedInfo.taxAssessmentAttached);
+        console.log('- taxYear:', income.detailedInfo.taxYear);
         
-        // Tax return submitted (Ja-Nein-6)
-        if (income.detailedInfo.taxReturnSubmitted) {
-          try {
-            const taxReturnField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-6[0]');
-            if (taxReturnField instanceof PDFCheckBox) {
-              taxReturnField.check();
-              console.log('✓ Checked tax return submitted (Ja-Nein-6)');
-            }
-          } catch (e) {
-            console.log('✗ Error checking tax return submitted:', e instanceof Error ? e.message : 'Unknown error');
-          }
-        }
-
-        // Tax assessment attached (Ja-Nein-7)
+        // Test mapping: User says only "Einkommenssteuerbescheid für das Kalenderjahr 2024 ist beigefügt" should be checked
+        // This corresponds to taxAssessmentAttached field
+        
+        // Map taxAssessmentAttached to Ja-Nein-6[0] (test based on user feedback)
         if (income.detailedInfo.taxAssessmentAttached) {
           try {
-            const taxAssessmentField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-7[0]');
-            if (taxAssessmentField instanceof PDFCheckBox) {
-              taxAssessmentField.check();
-              console.log('✓ Checked tax assessment attached (Ja-Nein-7)');
+            const field = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-6[0]');
+            if (field instanceof PDFCheckBox) {
+              field.check();
+              console.log('✓ Checked Ja-Nein-6[0] for tax assessment attached');
             }
           } catch (e) {
-            console.log('✗ Error checking tax assessment attached:', e instanceof Error ? e.message : 'Unknown error');
+            console.log('✗ Error with Ja-Nein-6[0]:', e instanceof Error ? e.message : 'Unknown error');
+          }
+        }
+        
+        // Map taxReturnSubmitted to Ja-Nein-7[0] 
+        if (income.detailedInfo.taxReturnSubmitted) {
+          try {
+            const field = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-7[0]');
+            if (field instanceof PDFCheckBox) {
+              field.check();
+              console.log('✓ Checked Ja-Nein-7[0] for tax return submitted');
+            }
+          } catch (e) {
+            console.log('✗ Error with Ja-Nein-7[0]:', e instanceof Error ? e.message : 'Unknown error');
+          }
+        }
+        
+        // Map taxReturnAttached to Ja-Nein-8[0] (if it exists)
+        if (income.detailedInfo.taxReturnAttached) {
+          try {
+            const field = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-8[0]');
+            if (field instanceof PDFCheckBox) {
+              field.check();
+              console.log('✓ Checked Ja-Nein-8[0] for tax return attached');
+            }
+          } catch (e) {
+            console.log('✗ Error with Ja-Nein-8[0]:', e instanceof Error ? e.message : 'Unknown error');
           }
         }
       }
