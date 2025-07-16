@@ -12,6 +12,9 @@ export class PDFService {
 
   constructor() {
     this.originalPdfPath = path.join(__dirname, 'assets', 'original-form.pdf');
+    console.log('PDFService constructor - PDF path:', this.originalPdfPath);
+    console.log('PDFService constructor - __dirname:', __dirname);
+    console.log('PDFService constructor - Current working directory:', process.cwd());
   }
 
   async fillForm(formData: FormData): Promise<Uint8Array> {
@@ -20,8 +23,43 @@ export class PDFService {
       console.log('PDF path:', this.originalPdfPath);
       console.log('File exists:', fs.existsSync(this.originalPdfPath));
       
+      // Check alternative paths for deployment
+      const alternativePaths = [
+        this.originalPdfPath,
+        path.join(process.cwd(), 'server', 'assets', 'original-form.pdf'),
+        path.join(process.cwd(), 'dist', 'assets', 'original-form.pdf'),
+        path.join(process.cwd(), 'assets', 'original-form.pdf'),
+        path.join(__dirname, '..', 'server', 'assets', 'original-form.pdf'),
+        path.join(__dirname, 'assets', 'original-form.pdf'),
+        path.join(__dirname, '..', 'assets', 'original-form.pdf'),
+        './server/assets/original-form.pdf',
+        './assets/original-form.pdf',
+        'server/assets/original-form.pdf',
+        'assets/original-form.pdf'
+      ];
+      
+      let actualPdfPath = this.originalPdfPath;
+      let foundPath = false;
+      
+      for (const testPath of alternativePaths) {
+        console.log('Testing path:', testPath, '- exists:', fs.existsSync(testPath));
+        if (fs.existsSync(testPath)) {
+          actualPdfPath = testPath;
+          foundPath = true;
+          break;
+        }
+      }
+      
+      if (!foundPath) {
+        console.error('PDF file not found in any of the expected locations:');
+        alternativePaths.forEach(p => console.error(' -', p));
+        throw new Error('Original PDF form file not found');
+      }
+      
+      console.log('Using PDF path:', actualPdfPath);
+      
       // Read the original PDF form
-      const existingPdfBytes = fs.readFileSync(this.originalPdfPath);
+      const existingPdfBytes = fs.readFileSync(actualPdfPath);
       console.log('PDF file read, size:', existingPdfBytes.length, 'bytes');
       
       // Load the PDF document

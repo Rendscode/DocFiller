@@ -68,9 +68,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.send(Buffer.from(pdfBytes));
     } catch (error) {
       console.error('PDF generation error:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('Request body keys:', Object.keys(req.body));
+      console.error('Form data type:', typeof req.body.formData);
       res.status(500).json({ 
         message: "PDF generation failed", 
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.stack : undefined
       });
     }
   });
