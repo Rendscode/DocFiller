@@ -49,6 +49,7 @@ export default function IncomeForm({ data, onSubmit }: IncomeFormProps) {
         taxReturnSubmitted: false,
         taxReturnAttached: false,
         taxAssessmentAttached: false,
+        taxReturnReason: "",
       },
     },
   });
@@ -584,6 +585,28 @@ export default function IncomeForm({ data, onSubmit }: IncomeFormProps) {
                             </FormItem>
                           )}
                         />
+
+                        {/* Conditional text field for "Wenn nein: bitte begründen" */}
+                        {!form.watch("detailedInfo.taxReturnSubmitted") && (
+                          <FormField
+                            control={form.control}
+                            name="detailedInfo.taxReturnReason"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm text-gray-700">
+                                  Wenn nein: bitte begründen
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Grund für nicht abgegebene Steuererklärung..."
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
 
                         <FormField
                           control={form.control}

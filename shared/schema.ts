@@ -78,6 +78,7 @@ export const incomeSchema = z.object({
     taxReturnSubmitted: z.boolean().optional(),
     taxReturnAttached: z.boolean().optional(),
     taxAssessmentAttached: z.boolean().optional(),
+    taxReturnReason: z.string().optional(),
   }).optional(),
 });
 

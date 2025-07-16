@@ -342,6 +342,7 @@ export class PDFService {
           'Arbeitsbescheinigung[0].Seite2[0].Kirchensteuer-EUR[0]': income.detailedInfo.churchTax,
           'Arbeitsbescheinigung[0].Seite2[0].Solidaritätszuschlag-EUR[0]': income.detailedInfo.solidarityTax,
           'Arbeitsbescheinigung[0].Seite2[0].Einkommen_Bescheid[0]': income.detailedInfo.taxYear,
+          'Arbeitsbescheinigung[0].Seite2[0].Wenn_nein_bitte_begründen[0]': income.detailedInfo.taxReturnReason,
         };
 
         Object.entries(detailedMappings).forEach(([fieldName, value]) => {
