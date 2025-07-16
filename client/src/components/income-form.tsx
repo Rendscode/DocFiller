@@ -45,6 +45,10 @@ export default function IncomeForm({ data, onSubmit }: IncomeFormProps) {
         incomeTax: 0,
         churchTax: 0,
         solidarityTax: 0,
+        taxYear: 0,
+        taxReturnSubmitted: false,
+        taxReturnAttached: false,
+        taxAssessmentAttached: false,
       },
     },
   });
