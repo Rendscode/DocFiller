@@ -334,8 +334,26 @@ export class PDFService {
         } catch (e) {
           console.log('✗ Error with expected income checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
-      } else if (income.type === 'detailed' && income.detailedInfo) {
-        // Section 3.3 - Detailed income section
+      }
+      
+      // Section 3.3 - Detailed income section (conditional filling)
+      // Fill section 3.3 only if:
+      // - Section 3.1 "Andere Einnahmen" is selected (existingActivity.scope === 'different'), OR
+      // - Section 3.2 "Erwartete Einnahmen > 165 EUR" is selected (newActivity.expectedIncome === 'high'), OR
+      // - Type is explicitly 'detailed'
+      const shouldFillDetailedSection = (
+        (income.type === 'existing' && income.existingActivity?.scope === 'different') ||
+        (income.type === 'new' && income.newActivity?.expectedIncome === 'high') ||
+        income.type === 'detailed'
+      );
+      
+      if (shouldFillDetailedSection && income.detailedInfo) {
+        console.log('=== Filling Section 3.3 (Detailed Info) ===');
+        console.log('Condition met for detailed section:');
+        console.log('- Income type:', income.type);
+        console.log('- Existing scope:', income.existingActivity?.scope);
+        console.log('- New expected income:', income.newActivity?.expectedIncome);
+        
         const detailedMappings = {
           'Arbeitsbescheinigung[0].Seite2[0].Einnahme_monatlich-EUR[0]': income.detailedInfo.monthlyIncome,
           'Arbeitsbescheinigung[0].Seite2[0].Betriebsausgaben-EUR[0]': income.detailedInfo.businessExpenses,
@@ -386,16 +404,12 @@ export class PDFService {
           console.log('✗ Error with Ja-Nein-5 checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
 
-        // Handle tax-related questions with correct field mapping
-        console.log('=== Tax Checkbox Mapping Test ===');
+        console.log('=== Tax Checkbox Mapping ===');
         console.log('Form data received:');
         console.log('- taxReturnSubmitted:', income.detailedInfo.taxReturnSubmitted);
         console.log('- taxReturnAttached:', income.detailedInfo.taxReturnAttached);
         console.log('- taxAssessmentAttached:', income.detailedInfo.taxAssessmentAttached);
         console.log('- taxYear:', income.detailedInfo.taxYear);
-        
-        // Test mapping: User says only "Einkommenssteuerbescheid für das Kalenderjahr 2024 ist beigefügt" should be checked
-        // This corresponds to taxAssessmentAttached field
         
         // Map taxAssessmentAttached to Ja-Nein-6 (Yes/No checkboxes)
         try {
@@ -453,6 +467,13 @@ export class PDFService {
         } catch (e) {
           console.log('✗ Error with Ja-Nein-8 checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
+      } else {
+        console.log('=== Skipping Section 3.3 ===');
+        console.log('Condition not met for detailed section:');
+        console.log('- Income type:', income.type);
+        console.log('- Existing scope:', income.existingActivity?.scope);
+        console.log('- New expected income:', income.newActivity?.expectedIncome);
+        console.log('- Has detailedInfo:', !!income.detailedInfo);
       }
     } catch (error) {
       console.error('Error filling income fields:', error);
