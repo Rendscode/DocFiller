@@ -298,13 +298,23 @@ export class PDFService {
           } catch (e) {}
         }
 
-        if (income.existingActivity.isUnchanged) {
-          try {
-            const unchangedField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Einkommen_3_1[0].Ja-Nein-3-1a[0]');
-            if (unchangedField instanceof PDFCheckBox) {
-              unchangedField.check();
+        // Map isUnchanged to Ja-Nein-3-1a (Yes/No checkboxes)
+        try {
+          if (income.existingActivity.isUnchanged) {
+            const unchangedYesField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Einkommen_3_1[0].Ja-Nein-3-1a[0]');
+            if (unchangedYesField instanceof PDFCheckBox) {
+              unchangedYesField.check();
+              console.log('✓ Checked Ja-Nein-3-1a[0] (Ja) for unchanged income');
             }
-          } catch (e) {}
+          } else {
+            const unchangedNoField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Einkommen_3_1[0].Ja-Nein-3-1a[1]');
+            if (unchangedNoField instanceof PDFCheckBox) {
+              unchangedNoField.check();
+              console.log('✓ Checked Ja-Nein-3-1a[1] (Nein) for changed income');
+            }
+          }
+        } catch (e) {
+          console.log('✗ Error with Ja-Nein-3-1a checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
 
         if (income.existingActivity.monthlyIncome) {
