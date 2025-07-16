@@ -317,13 +317,19 @@ export class PDFService {
           console.log('✗ Error with Ja-Nein-3-1a checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
 
-        if (income.existingActivity.monthlyIncome) {
+        // Only fill monthly income if income is unchanged (Ja checkbox is checked)
+        if (income.existingActivity.monthlyIncome && income.existingActivity.isUnchanged) {
           try {
             const incomeField = form.getField('Arbeitsbescheinigung[0].Seite1[0].Angaben_Einkommen_3_1[0].Wenn_ja_Höhe_der_Einnahme[0]');
             if (incomeField instanceof PDFTextField) {
               incomeField.setText(String(income.existingActivity.monthlyIncome));
+              console.log('✓ Filled monthly income field:', income.existingActivity.monthlyIncome);
             }
-          } catch (e) {}
+          } catch (e) {
+            console.log('✗ Error filling monthly income field:', e instanceof Error ? e.message : 'Unknown error');
+          }
+        } else if (!income.existingActivity.isUnchanged) {
+          console.log('⚠ Skipping monthly income field - income has changed (Nein checkbox selected)');
         }
       } else if (income.type === 'new' && income.newActivity) {
         // Section 3.2 - New activity
