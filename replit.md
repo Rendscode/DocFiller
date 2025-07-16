@@ -1,6 +1,6 @@
 # Overview
 
-This is a modern full-stack web application built for form filling and PDF generation. The system features a React-based frontend with a robust form management system and an Express.js backend that handles form data persistence and PDF generation capabilities. The application uses TypeScript throughout for type safety and includes comprehensive UI components built with shadcn/ui.
+This is a modern full-stack web application built for automatically filling German employment office forms (Arbeitsamt-Formulare), specifically the "Erklärung zu Einkünften aus selbstständiger Arbeit" form. The system features a React-based frontend with a robust multi-section form management system and an Express.js backend that handles form data persistence and precise PDF generation using the original form template. Version 1.0 includes complete checkbox mapping, conditional logic, and comprehensive field validation.
 
 # System Architecture
 
@@ -110,7 +110,19 @@ This is a modern full-stack web application built for form filling and PDF gener
 # Changelog
 
 ```
-Changelog:
+Version 1.0 - July 16, 2025
+✓ Complete PDF form filling implementation with original form template
+✓ Comprehensive checkbox mapping for all Yes/No fields (Ja-Nein-3-1 through Ja-Nein-8)
+✓ Conditional logic for section 3.3 based on user selections in sections 3.1 and 3.2
+✓ Proper radio button behavior in section 3.2 with exclusive selection
+✓ Income field conditional filling based on unchanged status
+✓ Location mapping from general info to declaration section
+✓ Complete tax-related field mapping with proper conditional logic
+✓ Calendar week-based working time input with decimal hour format
+✓ Master data persistence for form reuse
+✓ Auto-save functionality with localStorage integration
+
+Previous:
 - June 30, 2025. Initial setup
 ```
 
