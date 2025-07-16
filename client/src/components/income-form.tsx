@@ -231,73 +231,56 @@ export default function IncomeForm({ data, onSubmit }: IncomeFormProps) {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <FormField
-                      control={form.control}
-                      name="newActivity.expectedIncome"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="space-y-4"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="low" id="low-income" />
-                                <label htmlFor="low-income" className="text-sm font-medium text-gray-900">
-                                  Erwartete Einnahmen {'≤'} 165 EUR monatlich
-                                </label>
+                <FormField
+                  control={form.control}
+                  name="newActivity.expectedIncome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                        >
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center space-x-2 mb-4">
+                              <RadioGroupItem value="low" id="low-income" />
+                              <label htmlFor="low-income" className="text-sm font-medium text-gray-900">
+                                Erwartete Einnahmen {'≤'} 165 EUR monatlich
+                              </label>
+                            </div>
+                            
+                            <div className="ml-6">
+                              <p className="text-sm text-gray-600">Keine weiteren Angaben erforderlich.</p>
+                              <div className="mt-3 p-3 bg-yellow-50 rounded border border-yellow-200">
+                                <p className="text-xs text-yellow-800">
+                                  <AlertTriangle className="inline mr-1 h-3 w-3" />
+                                  Steigerung über 165 EUR unverzüglich melden!
+                                </p>
                               </div>
-                            </RadioGroup>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="ml-6 mt-4">
-                      <p className="text-sm text-gray-600">Keine weiteren Angaben erforderlich.</p>
-                      <div className="mt-3 p-3 bg-yellow-50 rounded border border-yellow-200">
-                        <p className="text-xs text-yellow-800">
-                          <AlertTriangle className="inline mr-1 h-3 w-3" />
-                          Steigerung über 165 EUR unverzüglich melden!
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                            </div>
+                          </div>
 
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <FormField
-                      control={form.control}
-                      name="newActivity.expectedIncome"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="space-y-4"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="high" id="high-income" />
-                                <label htmlFor="high-income" className="text-sm font-medium text-gray-900">
-                                  Erwartete Einnahmen {'>'} 165 EUR monatlich
-                                </label>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="ml-6 mt-4">
-                      <p className="text-sm text-gray-600">
-                        Bitte Angaben zur Höhe der Einnahmen unter 3.3 machen.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center space-x-2 mb-4">
+                              <RadioGroupItem value="high" id="high-income" />
+                              <label htmlFor="high-income" className="text-sm font-medium text-gray-900">
+                                Erwartete Einnahmen {'>'} 165 EUR monatlich
+                              </label>
+                            </div>
+                            
+                            <div className="ml-6">
+                              <p className="text-sm text-gray-600">
+                                Bitte Angaben zur Höhe der Einnahmen unter 3.3 machen.
+                              </p>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </TabsContent>
 
               <TabsContent value="detailed" className="space-y-6">

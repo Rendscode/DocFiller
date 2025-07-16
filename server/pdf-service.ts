@@ -317,20 +317,22 @@ export class PDFService {
         }
       } else if (income.type === 'new' && income.newActivity) {
         // Section 3.2 - New activity
-        if (income.newActivity.expectedIncome === 'low') {
-          try {
+        try {
+          if (income.newActivity.expectedIncome === 'low') {
             const lowIncomeField = form.getField('Arbeitsbescheinigung[0].Seite2[0].#subform[0].Ja-Nein-4[0]');
             if (lowIncomeField instanceof PDFCheckBox) {
               lowIncomeField.check();
+              console.log('✓ Checked Ja-Nein-4[0] (Ja) for low expected income');
             }
-          } catch (e) {}
-        } else {
-          try {
+          } else if (income.newActivity.expectedIncome === 'high') {
             const highIncomeField = form.getField('Arbeitsbescheinigung[0].Seite2[0].#subform[0].Ja-Nein-4[1]');
             if (highIncomeField instanceof PDFCheckBox) {
               highIncomeField.check();
+              console.log('✓ Checked Ja-Nein-4[1] (Nein) for high expected income');
             }
-          } catch (e) {}
+          }
+        } catch (e) {
+          console.log('✗ Error with expected income checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
       } else if (income.type === 'detailed' && income.detailedInfo) {
         // Section 3.3 - Detailed income section
