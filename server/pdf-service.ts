@@ -341,9 +341,13 @@ export class PDFService {
           'Arbeitsbescheinigung[0].Seite2[0].Einkommensteuer-EUR[0]': income.detailedInfo.incomeTax,
           'Arbeitsbescheinigung[0].Seite2[0].Kirchensteuer-EUR[0]': income.detailedInfo.churchTax,
           'Arbeitsbescheinigung[0].Seite2[0].Solidaritätszuschlag-EUR[0]': income.detailedInfo.solidarityTax,
-          'Arbeitsbescheinigung[0].Seite2[0].Einkommen_Bescheid[0]': income.detailedInfo.taxYear,
           'Arbeitsbescheinigung[0].Seite2[0].Wenn_nein_bitte_begründen[0]': income.detailedInfo.taxReturnReason,
         };
+
+        // Only include tax year if tax assessment is attached
+        if (income.detailedInfo.taxAssessmentAttached && income.detailedInfo.taxYear) {
+          detailedMappings['Arbeitsbescheinigung[0].Seite2[0].Einkommen_Bescheid[0]'] = income.detailedInfo.taxYear;
+        }
 
         Object.entries(detailedMappings).forEach(([fieldName, value]) => {
           try {
