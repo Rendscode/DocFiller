@@ -361,23 +361,23 @@ export class PDFService {
           }
         });
 
-        // Handle expense treatment
-        if (income.detailedInfo.expenseTreatment === 'flat') {
-          try {
+        // Handle expense treatment (Ja-Nein-5)
+        try {
+          if (income.detailedInfo.expenseTreatment === 'flat') {
             const flatField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-5[0]');
             if (flatField instanceof PDFCheckBox) {
               flatField.check();
-              console.log('✓ Checked flat expense treatment');
+              console.log('✓ Checked Ja-Nein-5[0] (Ja) for flat expense treatment');
             }
-          } catch (e) {}
-        } else {
-          try {
+          } else {
             const detailedField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-5[1]');
             if (detailedField instanceof PDFCheckBox) {
               detailedField.check();
-              console.log('✓ Checked detailed expense treatment');
+              console.log('✓ Checked Ja-Nein-5[1] (Nein) for detailed expense treatment');
             }
-          } catch (e) {}
+          }
+        } catch (e) {
+          console.log('✗ Error with Ja-Nein-5 checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
 
         // Handle tax-related questions with correct field mapping
@@ -391,43 +391,61 @@ export class PDFService {
         // Test mapping: User says only "Einkommenssteuerbescheid für das Kalenderjahr 2024 ist beigefügt" should be checked
         // This corresponds to taxAssessmentAttached field
         
-        // Map taxAssessmentAttached to Ja-Nein-6[0] (test based on user feedback)
-        if (income.detailedInfo.taxAssessmentAttached) {
-          try {
-            const field = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-6[0]');
-            if (field instanceof PDFCheckBox) {
-              field.check();
-              console.log('✓ Checked Ja-Nein-6[0] for tax assessment attached');
+        // Map taxAssessmentAttached to Ja-Nein-6 (Yes/No checkboxes)
+        try {
+          if (income.detailedInfo.taxAssessmentAttached) {
+            const fieldYes = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-6[0]');
+            if (fieldYes instanceof PDFCheckBox) {
+              fieldYes.check();
+              console.log('✓ Checked Ja-Nein-6[0] (Ja) for tax assessment attached');
             }
-          } catch (e) {
-            console.log('✗ Error with Ja-Nein-6[0]:', e instanceof Error ? e.message : 'Unknown error');
+          } else {
+            const fieldNo = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-6[1]');
+            if (fieldNo instanceof PDFCheckBox) {
+              fieldNo.check();
+              console.log('✓ Checked Ja-Nein-6[1] (Nein) for tax assessment not attached');
+            }
           }
+        } catch (e) {
+          console.log('✗ Error with Ja-Nein-6 checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
         
-        // Map taxReturnSubmitted to Ja-Nein-7[0] 
-        if (income.detailedInfo.taxReturnSubmitted) {
-          try {
-            const field = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-7[0]');
-            if (field instanceof PDFCheckBox) {
-              field.check();
-              console.log('✓ Checked Ja-Nein-7[0] for tax return submitted');
+        // Map taxReturnSubmitted to Ja-Nein-7 (Yes/No checkboxes)
+        try {
+          if (income.detailedInfo.taxReturnSubmitted) {
+            const fieldYes = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-7[0]');
+            if (fieldYes instanceof PDFCheckBox) {
+              fieldYes.check();
+              console.log('✓ Checked Ja-Nein-7[0] (Ja) for tax return submitted');
             }
-          } catch (e) {
-            console.log('✗ Error with Ja-Nein-7[0]:', e instanceof Error ? e.message : 'Unknown error');
+          } else {
+            const fieldNo = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-7[1]');
+            if (fieldNo instanceof PDFCheckBox) {
+              fieldNo.check();
+              console.log('✓ Checked Ja-Nein-7[1] (Nein) for tax return not submitted');
+            }
           }
+        } catch (e) {
+          console.log('✗ Error with Ja-Nein-7 checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
         
-        // Map taxReturnAttached to Ja-Nein-8[0] (if it exists)
-        if (income.detailedInfo.taxReturnAttached) {
-          try {
-            const field = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-8[0]');
-            if (field instanceof PDFCheckBox) {
-              field.check();
-              console.log('✓ Checked Ja-Nein-8[0] for tax return attached');
+        // Map taxReturnAttached to Ja-Nein-8 (Yes/No checkboxes)
+        try {
+          if (income.detailedInfo.taxReturnAttached) {
+            const fieldYes = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-8[0]');
+            if (fieldYes instanceof PDFCheckBox) {
+              fieldYes.check();
+              console.log('✓ Checked Ja-Nein-8[0] (Ja) for tax return attached');
             }
-          } catch (e) {
-            console.log('✗ Error with Ja-Nein-8[0]:', e instanceof Error ? e.message : 'Unknown error');
+          } else {
+            const fieldNo = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ja-Nein-8[1]');
+            if (fieldNo instanceof PDFCheckBox) {
+              fieldNo.check();
+              console.log('✓ Checked Ja-Nein-8[1] (Nein) for tax return not attached');
+            }
           }
+        } catch (e) {
+          console.log('✗ Error with Ja-Nein-8 checkboxes:', e instanceof Error ? e.message : 'Unknown error');
         }
       }
     } catch (error) {
