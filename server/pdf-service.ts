@@ -52,7 +52,7 @@ export class PDFService {
       // Mark declaration as confirmed
       console.log('Marking declaration confirmed...');
       if (formData.declarationConfirmed) {
-        this.markDeclarationConfirmed(form);
+        this.markDeclarationConfirmed(form, formData);
       }
       
       // Flatten the form to prevent further editing
@@ -457,7 +457,7 @@ export class PDFService {
     }
   }
 
-  private markDeclarationConfirmed(form: PDFForm) {
+  private markDeclarationConfirmed(form: PDFForm, formData: FormData) {
     try {
       // Add signature placeholder and date using actual PDF field names
       const today = new Date().toLocaleDateString('de-DE');
@@ -466,15 +466,21 @@ export class PDFService {
         const dateField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Datum-unten[0]');
         if (dateField instanceof PDFTextField) {
           dateField.setText(today);
+          console.log('✓ Filled declaration date field');
         }
-      } catch (e) {}
+      } catch (e) {
+        console.log('✗ Error filling declaration date field:', e instanceof Error ? e.message : 'Unknown error');
+      }
 
       try {
         const locationField = form.getField('Arbeitsbescheinigung[0].Seite2[0].Ort-unten[0]');
         if (locationField instanceof PDFTextField) {
-          locationField.setText('[Digitale Bestätigung]');
+          locationField.setText(formData.generalInfo.activityLocation);
+          console.log('✓ Filled declaration location field with:', formData.generalInfo.activityLocation);
         }
-      } catch (e) {}
+      } catch (e) {
+        console.log('✗ Error filling declaration location field:', e instanceof Error ? e.message : 'Unknown error');
+      }
     } catch (error) {
       console.error('Error marking declaration confirmed:', error);
     }
