@@ -23,6 +23,39 @@ export class PDFService {
       console.log('PDF path:', this.originalPdfPath);
       console.log('File exists:', fs.existsSync(this.originalPdfPath));
       
+      // Log environment information for debugging
+      console.log('=== PDF Service Environment Debug Info ===');
+      console.log('process.cwd():', process.cwd());
+      console.log('__dirname:', __dirname);
+      console.log('__filename:', __filename);
+      console.log('NODE_ENV:', process.env.NODE_ENV);
+      console.log('Process argv:', process.argv);
+      
+      // List current directory contents
+      try {
+        const cwdContents = fs.readdirSync(process.cwd());
+        console.log('Current working directory contents:', cwdContents);
+        
+        // Check if assets directory exists
+        if (cwdContents.includes('assets')) {
+          const assetsContents = fs.readdirSync(path.join(process.cwd(), 'assets'));
+          console.log('Assets directory contents:', assetsContents);
+        }
+        
+        // Check if server directory exists
+        if (cwdContents.includes('server')) {
+          const serverContents = fs.readdirSync(path.join(process.cwd(), 'server'));
+          console.log('Server directory contents:', serverContents);
+          
+          if (serverContents.includes('assets')) {
+            const serverAssetsContents = fs.readdirSync(path.join(process.cwd(), 'server', 'assets'));
+            console.log('Server/assets directory contents:', serverAssetsContents);
+          }
+        }
+      } catch (e) {
+        console.log('Error reading directory contents:', e instanceof Error ? e.message : 'Unknown error');
+      }
+
       // Check alternative paths for deployment
       const alternativePaths = [
         this.originalPdfPath,
@@ -42,7 +75,15 @@ export class PDFService {
         './server/assets/original-form.pdf',
         './assets/original-form.pdf',
         'server/assets/original-form.pdf',
-        'assets/original-form.pdf'
+        'assets/original-form.pdf',
+        // Absolute paths for production
+        '/home/runner/workspace/assets/original-form.pdf',
+        '/home/runner/workspace/server/assets/original-form.pdf',
+        // Additional production paths
+        path.resolve(process.cwd(), 'assets', 'original-form.pdf'),
+        path.resolve(process.cwd(), 'server', 'assets', 'original-form.pdf'),
+        path.resolve('.', 'assets', 'original-form.pdf'),
+        path.resolve('.', 'server', 'assets', 'original-form.pdf')
       ];
       
       let actualPdfPath = this.originalPdfPath;

@@ -47,6 +47,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug route to check file system
+  app.get("/api/debug/filesystem", async (req, res) => {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      
+      const debugInfo = {
+        cwd: process.cwd(),
+        dirname: __dirname,
+        nodeEnv: process.env.NODE_ENV,
+        argv: process.argv,
+        cwdContents: [],
+        assetsContents: [],
+        serverAssetsContents: [],
+        possiblePdfPaths: []
+      };
+      
+      // Get current directory contents
+      try {
+        debugInfo.cwdContents = fs.readdirSync(process.cwd());
+      } catch (e) {
+        debugInfo.cwdContents = [`Error: ${e.message}`];
+      }
+      
+      // Check assets directory
+      const assetsPath = path.join(process.cwd(), 'assets');
+      if (fs.existsSync(assetsPath)) {
+        try {
+          debugInfo.assetsContents = fs.readdirSync(assetsPath);
+        } catch (e) {
+          debugInfo.assetsContents = [`Error: ${e.message}`];
+        }
+      }
+      
+      // Check server/assets directory
+      const serverAssetsPath = path.join(process.cwd(), 'server', 'assets');
+      if (fs.existsSync(serverAssetsPath)) {
+        try {
+          debugInfo.serverAssetsContents = fs.readdirSync(serverAssetsPath);
+        } catch (e) {
+          debugInfo.serverAssetsContents = [`Error: ${e.message}`];
+        }
+      }
+      
+      // Check possible PDF paths
+      const possiblePaths = [
+        path.join(process.cwd(), 'assets', 'original-form.pdf'),
+        path.join(process.cwd(), 'server', 'assets', 'original-form.pdf'),
+        path.join(__dirname, 'assets', 'original-form.pdf'),
+        path.join(__dirname, '..', 'assets', 'original-form.pdf'),
+        '/home/runner/workspace/assets/original-form.pdf',
+        '/home/runner/workspace/server/assets/original-form.pdf'
+      ];
+      
+      debugInfo.possiblePdfPaths = possiblePaths.map(p => ({
+        path: p,
+        exists: fs.existsSync(p)
+      }));
+      
+      res.json(debugInfo);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Generate PDF
   app.post("/api/generate-pdf", async (req, res) => {
     try {
