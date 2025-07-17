@@ -26,12 +26,19 @@ export class PDFService {
       // Check alternative paths for deployment
       const alternativePaths = [
         this.originalPdfPath,
+        // Development paths
         path.join(process.cwd(), 'server', 'assets', 'original-form.pdf'),
-        path.join(process.cwd(), 'dist', 'assets', 'original-form.pdf'),
         path.join(process.cwd(), 'assets', 'original-form.pdf'),
-        path.join(__dirname, '..', 'server', 'assets', 'original-form.pdf'),
+        // Build/deployment paths
+        path.join(process.cwd(), 'dist', 'server', 'assets', 'original-form.pdf'),
+        path.join(process.cwd(), 'dist', 'assets', 'original-form.pdf'),
+        // Relative from built server location
         path.join(__dirname, 'assets', 'original-form.pdf'),
         path.join(__dirname, '..', 'assets', 'original-form.pdf'),
+        path.join(__dirname, '..', 'server', 'assets', 'original-form.pdf'),
+        // Root level deployment paths
+        './dist/server/assets/original-form.pdf',
+        './dist/assets/original-form.pdf',
         './server/assets/original-form.pdf',
         './assets/original-form.pdf',
         'server/assets/original-form.pdf',
